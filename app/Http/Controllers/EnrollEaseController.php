@@ -13,28 +13,112 @@ use Illuminate\Support\Facades\Log;
  */
 class EnrollEaseController extends Controller
 {
+    private function debugLog(string $hypothesisId, string $location, string $message, array $data = []): void
+    {
+        try {
+            $payload = json_encode([
+                'sessionId' => '0cc008',
+                'runId' => 'run5',
+                'hypothesisId' => $hypothesisId,
+                'location' => $location,
+                'message' => $message,
+                'data' => $data,
+                'timestamp' => (int) floor(microtime(true) * 1000),
+            ], JSON_UNESCAPED_SLASHES);
+
+            if ($payload === false) {
+                return;
+            }
+
+            file_put_contents('C:/xampp/htdocs/deoris/debug-0cc008.log', $payload . PHP_EOL, FILE_APPEND | LOCK_EX);
+        } catch (\Throwable $e) {
+            // Debug logging failures must not break SSO.
+        }
+    }
+
     public function ssoExchange(Request $request)
     {
         $validated = $request->validate([
             'token'    => 'required|string|max:500',
             'embedded' => 'sometimes|boolean',
         ]);
+        // #region agent log
+        $this->debugLog('H9', 'EnrollEaseController::ssoExchange:entry', 'enrollease ssoExchange called', [
+            'hasToken' => !empty($validated['token']),
+            'embedded' => (bool) ($validated['embedded'] ?? false),
+            'sessionId' => $request->session()->getId(),
+        ]);
+        // #endregion
 
         $portalUrl = rtrim((string) config('app.portal_url', 'https://deoris.test'), '/');
-        $response = Http::withHeaders([
-            'Accept'        => 'application/json',
-            'Authorization' => 'Bearer ' . $validated['token'],
-        ])->post($portalUrl . '/api/v1/sso/exchange', [
-            'token' => $validated['token'],
-        ]);
+        $exchangeUrl = $portalUrl . '/api/v1/sso/exchange';
+        $maxAttempts = 3;
+        $attempt = 0;
+        $response = null;
 
-        if (! $response->ok()) {
-            return response()->json(['success' => false, 'message' => 'Invalid SSO token'], 401);
+        // #region agent log
+        $this->debugLog('H43', 'EnrollEaseController::ssoExchange:exchangeStart', 'enrollease portal exchange started', [
+            'exchangeUrl' => $exchangeUrl,
+            'maxAttempts' => $maxAttempts,
+        ]);
+        // #endregion
+
+        do {
+            $attempt++;
+            $response = Http::withHeaders([
+                'Accept'        => 'application/json',
+                'Authorization' => 'Bearer ' . $validated['token'],
+            ])->post($exchangeUrl, [
+                'token' => $validated['token'],
+            ]);
+
+            $status = $response->status();
+            $retryable = $status === 429 || $status >= 500;
+            // #region agent log
+            $this->debugLog('H43', 'EnrollEaseController::ssoExchange:portalResponse', 'enrollease portal exchange response', [
+                'attempt' => $attempt,
+                'status' => $status,
+                'ok' => $response->ok(),
+                'retryable' => $retryable,
+            ]);
+            // #endregion
+
+            if ($response->ok() || ! $retryable) {
+                break;
+            }
+        } while ($attempt < $maxAttempts);
+
+        if (! $response || ! $response->ok()) {
+            $status = $response?->status() ?? 500;
+            $bodySnippet = substr((string) ($response?->body() ?? ''), 0, 160);
+
+            // #region agent log
+            $this->debugLog('H43', 'EnrollEaseController::ssoExchange:exchangeFailed', 'enrollease exchange failed after retries', [
+                'status' => $status,
+                'attempts' => $attempt,
+                'bodySnippet' => $bodySnippet,
+            ]);
+            // #endregion
+
+            if ($status === 401 || $status === 422) {
+                return response()->json(['success' => false, 'message' => 'Invalid SSO token'], 401);
+            }
+
+            if ($status === 429 || $status >= 500) {
+                return response()->json(['success' => false, 'message' => 'Portal SSO temporarily unavailable'], 503);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Portal SSO exchange failed'], 502);
         }
 
         $payload = $response->json();
         $user = $payload['user'] ?? $payload['data']['user'] ?? null;
         if (!is_array($user) || empty($user['id'])) {
+            // #region agent log
+            $this->debugLog('H9', 'EnrollEaseController::ssoExchange:invalidPayload', 'enrollease payload missing user id', [
+                'hasUserArray' => is_array($user),
+            ]);
+            // #endregion
             return response()->json(['success' => false, 'message' => 'Invalid SSO response'], 401);
         }
 
@@ -55,6 +139,13 @@ class EnrollEaseController extends Controller
             'user'                 => compact('id', 'name', 'email') + ['role' => $newRole],
             'sso_authenticated_at' => now()->timestamp,
         ]);
+        // #region agent log
+        $this->debugLog('H9', 'EnrollEaseController::ssoExchange:sessionHydrated', 'enrollease session hydrated after exchange', [
+            'ssoId' => $id,
+            'role' => $newRole,
+            'sessionId' => $request->session()->getId(),
+        ]);
+        // #endregion
 
         return response()->json([
             'success'  => true,
