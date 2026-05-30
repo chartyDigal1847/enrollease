@@ -29,7 +29,7 @@ Route::get('/logout',  [EnrollEaseController::class, 'logout'])->name('logout.ge
 
 // ── SSO redirect
 Route::post('/sso/redirect', [EnrollEaseController::class, 'ssoRedirect'])->name('sso.redirect');
-Route::post('/sso/exchange', [EnrollEaseController::class, 'ssoExchange'])->name('sso.exchange');
+Route::post('/sso/exchange', [EnrollEaseController::class, 'ssoExchange'])->name('sso.exchange.web');
 Route::get('/sso/redirect',  [EnrollEaseController::class, 'ssoRedirect'])->name('sso.redirect.dev');
 
 // ──────────────────────────────────────────────────────────────────────────────
