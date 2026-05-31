@@ -212,9 +212,10 @@
                                     <i class="fa-solid fa-eye"></i> View
                                 </a>
                             @elseif($doc['source'] === 'entryease')
-                                <span class="badge badge-approved">
-                                    <i class="fa-solid fa-link"></i> Stored in EntryEase
-                                </span>
+                                <a href="{{ route('officer.documents.view', [$enrollment->id, $doc['key']]) }}"
+                                   target="_blank" class="badge badge-approved" style="text-decoration:none;">
+                                    <i class="fa-solid fa-eye"></i> View from EntryEase
+                                </a>
                             @else
                                 <span class="badge badge-pending">Missing</span>
                             @endif

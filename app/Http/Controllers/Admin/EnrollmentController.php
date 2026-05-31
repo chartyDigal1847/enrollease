@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Enrollment;
 use App\Models\Room;
+use App\Services\EntryEaseApplicantDocuments;
 use Illuminate\Http\Request;
 
 /**
@@ -61,6 +62,34 @@ class EnrollmentController extends Controller
             'role'       => 'admin',
             'enrollment' => Enrollment::with('room')->findOrFail($id),
         ]);
+    }
+
+    /** GET /admin/documents/{id}/{type} */
+    public function viewDocument($id, $type, EntryEaseApplicantDocuments $entryEaseDocuments)
+    {
+        $enrollment = Enrollment::with('student')->findOrFail($id);
+
+        if (in_array($type, ['psa', 'photo'], true)) {
+            return $entryEaseDocuments->stream($enrollment, $type);
+        }
+
+        if ($type === 'report' && $enrollment->report_card_path) {
+            $filePath = storage_path('app/public/' . $enrollment->report_card_path);
+
+            if (! file_exists($filePath)) {
+                abort(404, 'File not found on disk.');
+            }
+
+            return response()->file($filePath, [
+                'Content-Type' => mime_content_type($filePath) ?: 'application/octet-stream',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'no-store, private, max-age=0, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]);
+        }
+
+        abort(404, 'Document not found.');
     }
 
     /** GET /admin/rooms — read-only room overview */

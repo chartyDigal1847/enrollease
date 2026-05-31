@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Enrollment;
 use App\Models\Room;
+use App\Services\EntryEaseApplicantDocuments;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -162,13 +163,15 @@ class EnrollmentController extends Controller
     }
 
     /** GET /officer/documents/{id}/{type} */
-    public function viewDocument($id, $type)
+    public function viewDocument($id, $type, EntryEaseApplicantDocuments $entryEaseDocuments)
     {
-        $enrollment = Enrollment::findOrFail($id);
+        $enrollment = Enrollment::with('student')->findOrFail($id);
+
+        if (in_array($type, ['psa', 'photo'], true)) {
+            return $entryEaseDocuments->stream($enrollment, $type);
+        }
 
         $documentMap = [
-            'psa'    => $enrollment->psa_path,
-            'photo'  => $enrollment->photo_path,
             'report' => $enrollment->report_card_path,
         ];
 

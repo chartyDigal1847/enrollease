@@ -166,13 +166,15 @@
                         <div class="doc-item">
                             <span class="doc-item-label">{{ $doc['label'] }}</span>
                             @if($doc['path'])
-                                <span class="badge badge-approved">
-                                    <i class="fa-solid fa-file"></i> Uploaded
-                                </span>
+                                <a href="{{ route('admin.documents.view', [$enrollment->id, $doc['key']]) }}"
+                                   target="_blank" class="badge badge-approved" style="text-decoration:none;">
+                                    <i class="fa-solid fa-eye"></i> View
+                                </a>
                             @elseif($doc['source'] === 'entryease')
-                                <span class="badge badge-approved">
-                                    <i class="fa-solid fa-link"></i> Stored in EntryEase
-                                </span>
+                                <a href="{{ route('admin.documents.view', [$enrollment->id, $doc['key']]) }}"
+                                   target="_blank" class="badge badge-approved" style="text-decoration:none;">
+                                    <i class="fa-solid fa-eye"></i> View from EntryEase
+                                </a>
                             @else
                                 <span class="badge badge-pending">Missing</span>
                             @endif

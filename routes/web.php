@@ -46,6 +46,11 @@ Route::prefix('admin')->name('admin.')->middleware('enrollease.role:admin')->gro
         Route::get('/{id}',  [AdminEnrollmentController::class, 'show']) ->name('show');
     });
 
+    // Read-only document viewing
+    Route::prefix('documents')->name('documents.')->group(function () {
+        Route::get('/{id}/{type}', [AdminEnrollmentController::class, 'viewDocument'])->name('view');
+    });
+
     // Read-only room overview
     Route::get('/rooms',    [AdminEnrollmentController::class, 'rooms'])   ->name('rooms');
     Route::get('/students', [AdminEnrollmentController::class, 'students'])->name('students');
