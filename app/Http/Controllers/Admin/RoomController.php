@@ -27,7 +27,7 @@ class RoomController extends Controller
     {
         $request->validate([
             'name'        => 'required|string|max:100',
-            'grade_level' => 'required|integer|between:6,12',
+            'grade_level' => 'required|integer|between:7,12',
         ]);
 
         Room::create($request->only('name', 'grade_level', 'section', 'adviser', 'capacity_male', 'capacity_female'));

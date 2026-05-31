@@ -61,7 +61,7 @@ class SectionApiController extends Controller
 
         $data = $request->validate([
             'name'             => 'required|string|max:100',
-            'grade_level'      => 'required|integer|between:6,12',
+            'grade_level'      => 'required|integer|between:7,12',
             'section'          => 'nullable|string|max:80',
             'adviser'          => 'nullable|string|max:150',
             'capacity_male'    => 'nullable|integer|min:0',
@@ -85,7 +85,7 @@ class SectionApiController extends Controller
         $room = Room::findOrFail($id);
         $data = $request->validate([
             'name'             => 'sometimes|string|max:100',
-            'grade_level'      => 'sometimes|integer|between:6,12',
+            'grade_level'      => 'sometimes|integer|between:7,12',
             'section'          => 'nullable|string|max:80',
             'adviser'          => 'nullable|string|max:150',
             'capacity_male'    => 'nullable|integer|min:0',

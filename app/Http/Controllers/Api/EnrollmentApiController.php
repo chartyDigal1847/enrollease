@@ -61,7 +61,7 @@ class EnrollmentApiController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'grade_level'  => 'required|integer|between:6,12',
+            'grade_level'  => 'required|integer|between:7,12',
             'school_year'  => 'nullable|string|max:20',
             'student_name' => 'required|string|max:200',
             'email'        => 'required|email|max:150',
@@ -111,7 +111,7 @@ class EnrollmentApiController extends Controller
             'status'      => 'sometimes|in:' . implode(',', $enrollment->nextStatuses()),
             'remarks'     => 'nullable|string|max:500',
             'room_id'     => 'nullable|exists:rooms,id',
-            'grade_level' => 'sometimes|integer|between:6,12',
+            'grade_level' => 'sometimes|integer|between:7,12',
         ]);
 
         $oldStatus = $enrollment->status;
