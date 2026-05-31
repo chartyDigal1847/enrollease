@@ -173,7 +173,7 @@
                             @elseif($doc['source'] === 'entryease')
                                 <a href="{{ route('admin.documents.view', [$enrollment->id, $doc['key']]) }}"
                                    target="_blank" class="badge badge-approved" style="text-decoration:none;">
-                                    <i class="fa-solid fa-eye"></i> View from EntryEase
+                                    <i class="fa-solid fa-eye"></i> View
                                 </a>
                             @else
                                 <span class="badge badge-pending">Missing</span>
