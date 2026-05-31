@@ -182,7 +182,21 @@
                         </div>
                         <div class="form-group">
                             <label>Adviser</label>
-                            <input type="text" name="adviser" class="form-control" value="{{ $room->adviser }}">
+                            @if(($instructors ?? collect())->isNotEmpty())
+                                <select name="adviser" class="form-control">
+                                    <option value="">Select instructor…</option>
+                                    @if($room->adviser && ! ($instructors ?? collect())->contains('name', $room->adviser))
+                                        <option value="{{ $room->adviser }}" selected>{{ $room->adviser }}</option>
+                                    @endif
+                                    @foreach($instructors as $instructor)
+                                        <option value="{{ $instructor->name }}" {{ $room->adviser === $instructor->name ? 'selected' : '' }}>
+                                            {{ $instructor->name }} — {{ $instructor->email }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" name="adviser" class="form-control" value="{{ $room->adviser }}" placeholder="Teacher name">
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -268,7 +282,18 @@
                     </div>
                     <div class="form-group">
                         <label>Adviser</label>
-                        <input type="text" name="adviser" class="form-control" placeholder="Teacher name">
+                        @if(($instructors ?? collect())->isNotEmpty())
+                            <select name="adviser" class="form-control">
+                                <option value="">Select instructor…</option>
+                                @foreach($instructors as $instructor)
+                                    <option value="{{ $instructor->name }}">
+                                        {{ $instructor->name }} — {{ $instructor->email }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @else
+                            <input type="text" name="adviser" class="form-control" placeholder="Teacher name">
+                        @endif
                     </div>
                     <div class="form-group">
                         <label>Male Capacity</label>

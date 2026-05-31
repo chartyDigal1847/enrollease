@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Enrollment;
 use App\Models\Room;
+use App\Services\PortalInstructors;
 use Illuminate\Http\Request;
 
 /**
@@ -16,7 +17,7 @@ class RoomController extends Controller
     public function __construct() {}
 
     /** GET /officer/rooms */
-    public function index()
+    public function index(PortalInstructors $portalInstructors)
     {
         return view('enrollment.officer.rooms', [
             'role'             => 'officer',
@@ -25,6 +26,7 @@ class RoomController extends Controller
                                             ->whereNull('room_id')
                                             ->get()
                                             ->groupBy('grade_level'),
+            'instructors'      => $portalInstructors->all(),
         ]);
     }
 
