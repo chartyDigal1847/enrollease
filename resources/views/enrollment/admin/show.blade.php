@@ -150,11 +150,15 @@
                     <span class="card-title"><i class="fa-solid fa-folder-open"></i> Documents</span>
                 </div>
                 <div class="card-body">
+                    <div class="info-notice" style="margin-bottom:1rem;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <div>Admission documents are stored in EntryEase to avoid duplicate uploads. EnrollEase only stores the report card.</div>
+                    </div>
                     @php
                         $docs = [
-                            ['label' => 'PSA Birth Certificate', 'key' => 'psa',    'path' => $enrollment->psa_path],
-                            ['label' => '2×2 Photo',             'key' => 'photo',  'path' => $enrollment->photo_path],
-                            ['label' => 'Report Card',           'key' => 'report', 'path' => $enrollment->report_card_path],
+                            ['label' => 'PSA Birth Certificate', 'key' => 'psa',    'path' => $enrollment->psa_path,         'source' => 'entryease'],
+                            ['label' => '2×2 Photo',             'key' => 'photo',  'path' => $enrollment->photo_path,       'source' => 'entryease'],
+                            ['label' => 'Report Card',           'key' => 'report', 'path' => $enrollment->report_card_path, 'source' => 'enrollease'],
                         ];
                     @endphp
                     <div class="doc-list">
@@ -164,6 +168,10 @@
                             @if($doc['path'])
                                 <span class="badge badge-approved">
                                     <i class="fa-solid fa-file"></i> Uploaded
+                                </span>
+                            @elseif($doc['source'] === 'entryease')
+                                <span class="badge badge-approved">
+                                    <i class="fa-solid fa-link"></i> Stored in EntryEase
                                 </span>
                             @else
                                 <span class="badge badge-pending">Missing</span>
