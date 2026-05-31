@@ -26,7 +26,7 @@
             <label>Grade Level</label>
             <select name="grade_level" class="form-control">
                 <option value="">All Grades</option>
-                @for($g = 1; $g <= 12; $g++)
+                @for($g = 6; $g <= 12; $g++)
                     <option value="{{ $g }}" {{ request('grade_level') == $g ? 'selected' : '' }}>Grade {{ $g }}</option>
                 @endfor
             </select>

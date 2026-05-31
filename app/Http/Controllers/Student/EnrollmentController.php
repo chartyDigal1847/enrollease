@@ -78,7 +78,7 @@ class EnrollmentController extends Controller
         }
 
         $data = $request->validate([
-            'grade_level'           => 'required|integer|between:7,12',
+            'grade_level'           => 'required|integer|between:6,12',
             'gender'                => 'required|in:male,female',
             'date_of_birth'         => 'required|date|before:today',
             'contact_number'        => 'required|string|max:20',
