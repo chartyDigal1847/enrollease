@@ -126,7 +126,7 @@
                         <label>Grade Level <span class="req">*</span></label>
                         <select name="grade_level" class="form-control" required>
                             <option value="">Select grade level…</option>
-                            @for($g = 1; $g <= 12; $g++)
+                            @for($g = 7; $g <= 12; $g++)
                                 <option value="{{ $g }}" {{ old('grade_level') == $g ? 'selected' : '' }}>
                                     Grade {{ $g }}
                                 </option>
@@ -154,7 +154,7 @@
                         <label>Last Grade Completed <span class="label-optional">(optional)</span></label>
                         <select name="last_grade_completed" class="form-control">
                             <option value="">Select…</option>
-                            @for($g = 1; $g <= 12; $g++)
+                            @for($g = 6; $g <= 12; $g++)
                                 <option value="{{ $g }}" {{ old('last_grade_completed') == $g ? 'selected' : '' }}>
                                     Grade {{ $g }}
                                 </option>
