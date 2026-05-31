@@ -8,7 +8,6 @@
     <div class="page-header">
         <div>
             <h1><i class="fa-solid fa-graduation-cap"></i> Enrollment Application</h1>
-            <p>Fill in your details to submit your enrollment application.</p>
         </div>
         <div class="page-header-actions">
             <a href="{{ route('student.dashboard') }}" class="btn btn-ghost btn-sm">
@@ -41,13 +40,6 @@
                 </span>
             </div>
             <div class="card-body">
-                <div class="info-notice">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <div>
-                        <strong>Your name and email are pre-filled from your account.</strong>
-                        <p>Please complete the remaining fields below.</p>
-                    </div>
-                </div>
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label>Full Name</label>
@@ -235,13 +227,6 @@
                 </span>
             </div>
             <div class="card-body">
-                <div class="info-notice">
-                    <i class="fa-solid fa-file-circle-check"></i>
-                    <div>
-                        <strong>Only upload the document needed for enrollment.</strong>
-                        <p>Your admission documents from EntryEase are kept there to avoid duplicate uploads.</p>
-                    </div>
-                </div>
                 <div class="form-group {{ $errors->has('report_card') ? 'has-error' : '' }}">
                     <label>Latest Report Card <span class="req">*</span></label>
                     <input type="file"
@@ -249,7 +234,6 @@
                            class="form-control"
                            accept="application/pdf,image/jpeg,image/png,image/jpg"
                            required>
-                    <small class="form-help">Accepted formats: PDF, JPG, or PNG. Maximum size: 5 MB.</small>
                     @error('report_card')
                         <span class="form-error">{{ $message }}</span>
                     @enderror
@@ -260,11 +244,7 @@
         {{-- Submit --}}
         <div class="card">
             <div class="card-body">
-                <div class="flex items-center justify-between flex-wrap gap-3">
-                    <div class="flex gap-2 items-center text-sm" style="color:var(--text-muted);">
-                        <i class="fa-solid fa-circle-info"></i>
-                        Once submitted, your application will be reviewed by the Admission Officer.
-                    </div>
+                <div class="flex items-center justify-end flex-wrap gap-3">
                     <div class="flex gap-2">
                         <a href="{{ route('student.dashboard') }}" class="btn btn-ghost">Cancel</a>
                         <button type="submit" class="btn btn-primary" id="submitBtn">

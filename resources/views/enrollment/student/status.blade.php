@@ -183,7 +183,7 @@
         <div class="empty-state">
             <div class="empty-icon"><i class="fa-solid fa-clipboard-list"></i></div>
             <h3>No enrollment application yet</h3>
-            <p>Submit your enrollment application to get started.</p>
+            <p>No enrollment application on file.</p>
             <a href="{{ route('student.enrollment.create') }}" class="btn btn-primary mt-4">
                 <i class="fa-solid fa-file-pen"></i> Apply Now
             </a>

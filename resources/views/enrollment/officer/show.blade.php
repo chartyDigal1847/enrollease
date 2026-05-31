@@ -191,10 +191,6 @@
                     <span class="card-title"><i class="fa-solid fa-folder-open"></i> Documents</span>
                 </div>
                 <div class="card-body">
-                    <div class="info-notice" style="margin-bottom:1rem;">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <div>Admission documents are stored in EntryEase to avoid duplicate uploads. EnrollEase only stores the report card.</div>
-                    </div>
                     @php
                         $docs = [
                             ['label' => 'PSA Birth Certificate', 'key' => 'psa',    'path' => $enrollment->psa_path,         'source' => 'entryease'],
