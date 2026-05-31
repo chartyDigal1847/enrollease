@@ -95,9 +95,20 @@ class RoomController extends Controller
             return back()->with('error', "This room has reached its female capacity ({$room->capacity_female}).");
         }
 
+        if ($enrollment->status !== Enrollment::STATUS_APPROVED) {
+            return back()->with('error', 'Only approved enrollments can be assigned to a room.');
+        }
+
         // Assign room and mark enrolled
         $enrollment->update(['room_id' => $room->id]);
-        $enrollment->transitionTo(Enrollment::STATUS_ENROLLED);
+
+        try {
+            $enrollment->transitionTo(Enrollment::STATUS_ENROLLED);
+        } catch (\InvalidArgumentException $e) {
+            $enrollment->update(['room_id' => null]);
+
+            return back()->with('error', $e->getMessage());
+        }
 
         // Reload with room relationship for event payload
         $enrollment->refresh();
@@ -139,7 +150,12 @@ class RoomController extends Controller
 
         $name = $enrollment->student_name;
         $enrollment->update(['room_id' => null]);
-        $enrollment->transitionTo(Enrollment::STATUS_APPROVED);
+
+        try {
+            $enrollment->transitionTo(Enrollment::STATUS_APPROVED);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         ActivityLog::log('enrollment.section_removed', $enrollment, ['room_name' => $room->name]);
 

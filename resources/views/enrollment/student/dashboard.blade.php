@@ -19,7 +19,7 @@
                 @if($enrollment ?? null)
                     Your enrollment application is currently
                     <strong class="student-hero__status student-hero__status--{{ $enrollment->status }}">
-                        {{ ucfirst($enrollment->status) }}
+                        {{ $enrollment->status_label }}
                     </strong>.
                 @else
                     You haven't submitted an enrollment application yet.
@@ -67,13 +67,13 @@
                 <i class="fa-solid fa-clipboard-list"></i>
                 Your Enrollment
             </span>
-            <span class="badge badge-{{ $enrollment->status }}">{{ ucfirst($enrollment->status) }}</span>
+            <span class="badge badge-{{ $enrollment->status }}">{{ $enrollment->status_label }}</span>
         </div>
         <div class="card-body">
 
             {{-- Progress bar --}}
             @php
-                $stageMap = ['pending' => 0, 'verified' => 1, 'approved' => 2, 'enrolled' => 3];
+                $stageMap = ['pending' => 0, 'reviewing' => 1, 'approved' => 2, 'enrolled' => 3];
                 $currentStage = $stageMap[$enrollment->status] ?? -1;
                 $isTerminal = in_array($enrollment->status, ['rejected', 'cancelled']);
             @endphp
@@ -82,10 +82,10 @@
             <div class="progress-steps mb-6">
                 @php
                     $stages = [
-                        ['label' => 'Submitted', 'stage' => 0],
-                        ['label' => 'Verified',  'stage' => 1],
-                        ['label' => 'Approved',  'stage' => 2],
-                        ['label' => 'Enrolled',  'stage' => 3],
+                        ['label' => 'Submitted',    'stage' => 0],
+                        ['label' => 'Under Review', 'stage' => 1],
+                        ['label' => 'Approved',     'stage' => 2],
+                        ['label' => 'Enrolled',     'stage' => 3],
                     ];
                 @endphp
                 @foreach($stages as $s)

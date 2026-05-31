@@ -24,7 +24,8 @@ class EnrollmentController extends Controller
             'role'               => 'officer',
             'totalEnrollments'   => Enrollment::count(),
             'pendingCount'       => Enrollment::where('status', Enrollment::STATUS_PENDING)->count(),
-            'verifiedCount'      => Enrollment::whereIn('status', [Enrollment::STATUS_REVIEWING])->count(),
+            'verifiedCount'      => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
+            'reviewingCount'     => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
             'approvedCount'      => Enrollment::where('status', Enrollment::STATUS_APPROVED)->count(),
             'enrolledCount'      => Enrollment::where('status', Enrollment::STATUS_ENROLLED)->count(),
             'processedToday'     => Enrollment::whereIn('status', [
@@ -86,16 +87,20 @@ class EnrollmentController extends Controller
         return back()->with('success', "Enrollment #{$id} is now under review.");
     }
 
-    /** PATCH /officer/enrollments/{id}/approve — reviewing/pending → approved */
+    /** PATCH /officer/enrollments/{id}/approve — reviewing → approved */
     public function approve($id)
     {
         $enrollment = Enrollment::findOrFail($id);
 
-        if (! in_array($enrollment->status, [Enrollment::STATUS_PENDING, Enrollment::STATUS_REVIEWING])) {
-            return back()->with('error', 'Only pending or reviewing enrollments can be approved.');
+        if ($enrollment->status !== Enrollment::STATUS_REVIEWING) {
+            return back()->with('error', 'Only enrollments under review can be approved. Verify the application first.');
         }
 
-        $enrollment->transitionTo(Enrollment::STATUS_APPROVED);
+        try {
+            $enrollment->transitionTo(Enrollment::STATUS_APPROVED);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         \App\Jobs\PublishPendingEvents::dispatchSync();
         ActivityLog::log('enrollment.approved', $enrollment);
@@ -108,11 +113,15 @@ class EnrollmentController extends Controller
     {
         $enrollment = Enrollment::findOrFail($id);
 
-        if (in_array($enrollment->status, [Enrollment::STATUS_ENROLLED, Enrollment::STATUS_REJECTED, Enrollment::STATUS_CANCELLED])) {
+        if (! $enrollment->canTransitionTo(Enrollment::STATUS_REJECTED)) {
             return back()->with('error', 'This enrollment cannot be rejected at its current status.');
         }
 
-        $enrollment->transitionTo(Enrollment::STATUS_REJECTED);
+        try {
+            $enrollment->transitionTo(Enrollment::STATUS_REJECTED);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         \App\Jobs\PublishPendingEvents::dispatchSync();
         ActivityLog::log('enrollment.rejected', $enrollment);
@@ -123,15 +132,25 @@ class EnrollmentController extends Controller
     /** PATCH /officer/enrollments/{id}/update-status */
     public function updateStatus(Request $request, $id)
     {
+        $enrollment = Enrollment::findOrFail($id);
+        $allowed    = $enrollment->nextStatuses();
+
+        if (empty($allowed)) {
+            return back()->with('error', 'No further status changes are allowed for this enrollment.');
+        }
+
         $request->validate([
-            'status'  => 'required|in:' . implode(',', Enrollment::STATUSES),
+            'status'  => 'required|in:' . implode(',', $allowed),
             'remarks' => 'nullable|string|max:500',
         ]);
 
-        $enrollment = Enrollment::findOrFail($id);
-        $newStatus  = $request->status;
+        $newStatus = $request->status;
 
-        $enrollment->transitionTo($newStatus, $request->remarks);
+        try {
+            $enrollment->transitionTo($newStatus, $request->remarks);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         if ($newStatus !== Enrollment::STATUS_PENDING && $newStatus !== Enrollment::STATUS_REVIEWING) {
             \App\Jobs\PublishPendingEvents::dispatchSync();

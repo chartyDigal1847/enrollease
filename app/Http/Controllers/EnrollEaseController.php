@@ -299,11 +299,14 @@ class EnrollEaseController extends Controller
                 'role'               => 'officer',
                 'totalEnrollments'   => Enrollment::count(),
                 'pendingCount'       => Enrollment::where('status', 'pending')->count(),
-                'verifiedCount'      => Enrollment::where('status', 'verified')->count(),
-                'approvedCount'      => Enrollment::where('status', 'approved')->count(),
-                'enrolledCount'      => Enrollment::where('status', 'enrolled')->count(),
-                'processedToday'     => Enrollment::whereIn('status', ['verified', 'approved', 'rejected'])
-                                            ->whereDate('updated_at', now()->toDateString())->count(),
+                'verifiedCount'      => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
+                'reviewingCount'     => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
+                'approvedCount'      => Enrollment::where('status', Enrollment::STATUS_APPROVED)->count(),
+                'enrolledCount'      => Enrollment::where('status', Enrollment::STATUS_ENROLLED)->count(),
+                'processedToday'     => Enrollment::whereIn('status', [
+                                            Enrollment::STATUS_APPROVED,
+                                            Enrollment::STATUS_REJECTED,
+                                        ])->whereDate('updated_at', now()->toDateString())->count(),
                 'pendingEnrollments' => Enrollment::where('status', 'pending')->latest()->limit(10)->get(),
             ]);
         }
@@ -313,10 +316,11 @@ class EnrollEaseController extends Controller
                 'role'              => 'admin',
                 'totalEnrollments'  => Enrollment::count(),
                 'pendingCount'      => Enrollment::where('status', 'pending')->count(),
-                'verifiedCount'     => Enrollment::where('status', 'verified')->count(),
-                'approvedCount'     => Enrollment::where('status', 'approved')->count(),
-                'enrolledCount'     => Enrollment::where('status', 'enrolled')->count(),
-                'rejectedCount'     => Enrollment::where('status', 'rejected')->count(),
+                'verifiedCount'     => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
+                'reviewingCount'    => Enrollment::where('status', Enrollment::STATUS_REVIEWING)->count(),
+                'approvedCount'     => Enrollment::where('status', Enrollment::STATUS_APPROVED)->count(),
+                'enrolledCount'     => Enrollment::where('status', Enrollment::STATUS_ENROLLED)->count(),
+                'rejectedCount'     => Enrollment::where('status', Enrollment::STATUS_REJECTED)->count(),
                 'roomCount'         => \App\Models\Room::count(),
                 'recentEnrollments' => Enrollment::with('room')->latest()->limit(10)->get(),
             ]);

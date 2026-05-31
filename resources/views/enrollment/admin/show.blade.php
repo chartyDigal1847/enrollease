@@ -23,7 +23,7 @@
             <div class="flex items-center justify-between flex-wrap gap-3">
                 <div class="flex items-center gap-3">
                     <span class="badge badge-{{ $enrollment->status }}" style="font-size:.85rem;padding:6px 14px;">
-                        {{ ucfirst($enrollment->status) }}
+                        {{ $enrollment->status_label }}
                     </span>
                     <span class="text-muted text-sm">Current enrollment status</span>
                 </div>

@@ -47,7 +47,7 @@
                 <div class="status-banner-item">
                     <span class="status-banner-label">Status</span>
                     <span class="badge badge-{{ $enrollment->status }}" style="font-size:.85rem;padding:6px 14px;">
-                        {{ ucfirst($enrollment->status) }}
+                        {{ $enrollment->status_label }}
                     </span>
                 </div>
             </div>
@@ -68,7 +68,7 @@
         </div>
         <div class="card-body">
             @php
-                $stageMap = ['pending' => 0, 'verified' => 1, 'approved' => 2, 'enrolled' => 3];
+                $stageMap = ['pending' => 0, 'reviewing' => 1, 'approved' => 2, 'enrolled' => 3];
                 $currentStage = $stageMap[$enrollment->status] ?? -1;
             @endphp
 
@@ -87,10 +87,10 @@
             <div class="progress-steps">
                 @php
                     $stages = [
-                        ['label' => 'Submitted', 'stage' => 0],
-                        ['label' => 'Verified',  'stage' => 1],
-                        ['label' => 'Approved',  'stage' => 2],
-                        ['label' => 'Enrolled',  'stage' => 3],
+                        ['label' => 'Submitted',    'stage' => 0],
+                        ['label' => 'Under Review', 'stage' => 1],
+                        ['label' => 'Approved',     'stage' => 2],
+                        ['label' => 'Enrolled',     'stage' => 3],
                     ];
                 @endphp
                 @foreach($stages as $s)

@@ -108,7 +108,7 @@ class EnrollmentApiController extends Controller
         }
 
         $data = $request->validate([
-            'status'      => 'sometimes|in:' . implode(',', Enrollment::STATUSES),
+            'status'      => 'sometimes|in:' . implode(',', $enrollment->nextStatuses()),
             'remarks'     => 'nullable|string|max:500',
             'room_id'     => 'nullable|exists:rooms,id',
             'grade_level' => 'sometimes|integer|between:1,12',
@@ -117,12 +117,28 @@ class EnrollmentApiController extends Controller
         $oldStatus = $enrollment->status;
 
         if (isset($data['status']) && $data['status'] !== $oldStatus) {
+            if (! $enrollment->canTransitionTo($data['status'])) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'invalid_transition',
+                    'message' => "Cannot transition enrollment from '{$oldStatus}' to '{$data['status']}'.",
+                ], 422);
+            }
+
             if (array_key_exists('room_id', $data)) {
                 $enrollment->update(['room_id' => $data['room_id']]);
                 unset($data['room_id']);
             }
 
-            $enrollment->transitionTo($data['status'], $data['remarks'] ?? null);
+            try {
+                $enrollment->transitionTo($data['status'], $data['remarks'] ?? null);
+            } catch (\InvalidArgumentException $e) {
+                return response()->json([
+                    'success' => false,
+                    'error'   => 'invalid_transition',
+                    'message' => $e->getMessage(),
+                ], 422);
+            }
 
             if (! in_array($data['status'], [Enrollment::STATUS_PENDING, Enrollment::STATUS_REVIEWING], true)) {
                 \App\Jobs\PublishPendingEvents::dispatchSync();

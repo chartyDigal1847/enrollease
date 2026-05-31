@@ -85,7 +85,7 @@
                                 <span class="td-sub">{{ $s->email }}</span>
                             </td>
                             <td>{{ ucfirst($s->gender ?? '—') }}</td>
-                            <td><span class="badge badge-{{ $s->status }}">{{ ucfirst($s->status) }}</span></td>
+                            <td><span class="badge badge-{{ $s->status }}">{{ $s->status_label }}</span></td>
                         </tr>
                         @endforeach
                     </tbody>

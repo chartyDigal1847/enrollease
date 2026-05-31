@@ -501,7 +501,8 @@ tbody tr:hover { background: var(--primary-light); }
     border: 1px solid transparent; letter-spacing: .02em;
 }
 .badge-pending   { background: var(--warning-bg); color: #92400e; border-color: rgba(217,119,6,.25); }
-.badge-verified  { background: var(--info-bg);    color: #1e40af; border-color: rgba(37,99,235,.25); }
+.badge-verified,
+.badge-reviewing { background: var(--info-bg);    color: #1e40af; border-color: rgba(37,99,235,.25); }
 .badge-approved  { background: var(--success-bg); color: #14532d; border-color: rgba(22,163,74,.25); }
 .badge-rejected  { background: var(--danger-bg);  color: #7f1d1d; border-color: rgba(220,38,38,.25); }
 .badge-enrolled  { background: #f0fdf4;            color: #065f46; border-color: rgba(22,163,74,.3); }
@@ -1036,7 +1037,8 @@ body.is-embedded .filter-bar .form-group { min-width: 100%; }
     color: #fff;
 }
 .student-hero__status--pending   { color: #fde68a; }
-.student-hero__status--verified  { color: #93c5fd; }
+.student-hero__status--verified,
+.student-hero__status--reviewing { color: #93c5fd; }
 .student-hero__status--approved  { color: #86efac; }
 .student-hero__status--enrolled  { color: #6ee7b7; }
 .student-hero__status--rejected  { color: #fca5a5; }

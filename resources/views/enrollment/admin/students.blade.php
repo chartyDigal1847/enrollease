@@ -68,7 +68,7 @@
                         <td>Grade {{ $e->grade_level }}</td>
                         <td>{{ ucfirst($e->gender ?? '—') }}</td>
                         <td>{{ $e->room->name ?? '—' }}</td>
-                        <td><span class="badge badge-{{ $e->status }}">{{ ucfirst($e->status) }}</span></td>
+                        <td><span class="badge badge-{{ $e->status }}">{{ $e->status_label }}</span></td>
                         <td class="text-muted">{{ $e->created_at->format('M d, Y') }}</td>
                     </tr>
                     @empty

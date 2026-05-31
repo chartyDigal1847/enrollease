@@ -35,8 +35,10 @@
             <label>Status</label>
             <select name="status" class="form-control">
                 <option value="">All Status</option>
-                @foreach(['pending','verified','approved','rejected','enrolled','cancelled'] as $s)
-                    <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                @foreach(['pending','reviewing','approved','rejected','enrolled','cancelled'] as $s)
+                    <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                        {{ $s === 'reviewing' ? 'Under Review' : ucfirst($s) }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -76,7 +78,7 @@
                         </td>
                         <td>Grade {{ $e->grade_level }}</td>
                         <td class="text-muted">{{ $e->created_at->format('M d, Y') }}</td>
-                        <td><span class="badge badge-{{ $e->status }}">{{ ucfirst($e->status) }}</span></td>
+                        <td><span class="badge badge-{{ $e->status }}">{{ $e->status_label }}</span></td>
                         <td class="text-muted">{{ $e->room->name ?? '—' }}</td>
                         <td>
                             <a href="{{ route('admin.enrollments.show', $e->id) }}" class="btn btn-ghost btn-sm" title="View">

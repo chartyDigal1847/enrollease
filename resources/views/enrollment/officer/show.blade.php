@@ -31,13 +31,16 @@
                 </form>
             @endif
 
-            @if(in_array($enrollment->status, ['pending', 'verified']))
+            @if($enrollment->status === 'reviewing')
                 <form method="POST" action="{{ route('officer.enrollments.approve', $enrollment->id) }}">
                     @csrf @method('PATCH')
                     <button class="btn btn-success btn-sm">
                         <i class="fa-solid fa-check"></i> Approve
                     </button>
                 </form>
+            @endif
+
+            @if($enrollment->canTransitionTo(\App\Models\Enrollment::STATUS_REJECTED))
                 <form method="POST" action="{{ route('officer.enrollments.reject', $enrollment->id) }}"
                       onsubmit="return confirm('Reject this enrollment?')">
                     @csrf @method('PATCH')
@@ -47,9 +50,11 @@
                 </form>
             @endif
 
+            @if(! empty($enrollment->nextStatuses()))
             <button class="btn btn-outline btn-sm" onclick="openModal('statusModal')">
                 <i class="fa-solid fa-sliders"></i> Update Status
             </button>
+            @endif
         </div>
     </div>
 
@@ -59,7 +64,7 @@
             <div class="flex items-center justify-between flex-wrap gap-3">
                 <div class="flex items-center gap-3">
                     <span class="badge badge-{{ $enrollment->status }}" style="font-size:.85rem;padding:6px 14px;">
-                        {{ ucfirst($enrollment->status) }}
+                        {{ $enrollment->status_label }}
                     </span>
                     <span class="text-muted text-sm">Current enrollment status</span>
                 </div>
@@ -269,8 +274,8 @@
                 <div class="form-group">
                     <label>New Status</label>
                     <select name="status" class="form-control" required>
-                        @foreach(['pending','verified','approved','rejected','cancelled','enrolled'] as $s)
-                            <option value="{{ $s }}" {{ $enrollment->status === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                        @foreach($enrollment->nextStatuses() as $s)
+                            <option value="{{ $s }}">{{ ucfirst($s === 'reviewing' ? 'under review' : $s) }}</option>
                         @endforeach
                     </select>
                 </div>

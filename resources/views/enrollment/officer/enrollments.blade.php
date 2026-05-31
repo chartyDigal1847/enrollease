@@ -49,8 +49,10 @@
             <label>Status</label>
             <select name="status" class="form-control">
                 <option value="">All Status</option>
-                @foreach(['pending','verified','approved','rejected','enrolled','cancelled'] as $s)
-                    <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                @foreach(['pending','reviewing','approved','rejected','enrolled','cancelled'] as $s)
+                    <option value="{{ $s }}" {{ request('status') === $s ? 'selected' : '' }}>
+                        {{ $s === 'reviewing' ? 'Under Review' : ucfirst($s) }}
+                    </option>
                 @endforeach
             </select>
         </div>
@@ -91,7 +93,7 @@
                         </td>
                         <td>Grade {{ $e->grade_level }}</td>
                         <td class="text-muted">{{ $e->created_at->format('M d, Y') }}</td>
-                        <td><span class="badge badge-{{ $e->status }}">{{ ucfirst($e->status) }}</span></td>
+                        <td><span class="badge badge-{{ $e->status }}">{{ $e->status_label }}</span></td>
                         <td>
                             <div class="flex gap-2">
                                 <a href="{{ route('officer.enrollments.show', $e->id) }}" class="btn btn-ghost btn-sm" title="View">
@@ -105,11 +107,14 @@
                                         </button>
                                     </form>
                                 @endif
+                                @if(! empty($e->nextStatuses()))
                                 <button class="btn btn-ghost btn-sm" onclick="openModal('statusModal{{ $e->id }}')" title="Update Status">
                                     <i class="fa-solid fa-sliders"></i>
                                 </button>
+                                @endif
                             </div>
 
+                            @if(! empty($e->nextStatuses()))
                             <div class="modal-overlay" id="statusModal{{ $e->id }}">
                                 <div class="modal">
                                     <div class="modal-header">
@@ -122,8 +127,8 @@
                                             <div class="form-group">
                                                 <label>New Status</label>
                                                 <select name="status" class="form-control" required>
-                                                    @foreach(['pending','verified','approved','rejected','cancelled'] as $s)
-                                                        <option value="{{ $s }}" {{ $e->status === $s ? 'selected' : '' }}>{{ ucfirst($s) }}</option>
+                                                    @foreach($e->nextStatuses() as $s)
+                                                        <option value="{{ $s }}">{{ $s === 'reviewing' ? 'Under Review' : ucfirst($s) }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
@@ -140,6 +145,7 @@
                                     </form>
                                 </div>
                             </div>
+                            @endif
                         </td>
                     </tr>
                     @empty

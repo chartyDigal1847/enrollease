@@ -53,8 +53,8 @@
         <div class="stat-card">
             <div class="stat-icon blue"><i class="fa-solid fa-magnifying-glass"></i></div>
             <div class="stat-info">
-                <div class="stat-label">Verified</div>
-                <div class="stat-value">{{ $verifiedCount ?? 0 }}</div>
+                <div class="stat-label">Under Review</div>
+                <div class="stat-value">{{ $reviewingCount ?? $verifiedCount ?? 0 }}</div>
                 <div class="stat-sub">Awaiting approval</div>
             </div>
         </div>
@@ -135,7 +135,7 @@
                         </td>
                         <td>Grade {{ $e->grade_level }}</td>
                         <td class="text-muted">{{ $e->created_at->format('M d, Y') }}</td>
-                        <td><span class="badge badge-{{ $e->status }}">{{ ucfirst($e->status) }}</span></td>
+                        <td><span class="badge badge-{{ $e->status }}">{{ $e->status_label }}</span></td>
                         <td>
                             <div class="flex gap-2">
                                 <a href="{{ route('officer.enrollments.show', $e->id) }}" class="btn btn-ghost btn-sm">
