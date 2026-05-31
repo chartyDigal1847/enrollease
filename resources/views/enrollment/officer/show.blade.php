@@ -22,15 +22,6 @@
                 <i class="fa-solid fa-arrow-left"></i> Back
             </a>
 
-            @if($enrollment->status === 'pending')
-                <form method="POST" action="{{ route('officer.enrollments.verify', $enrollment->id) }}">
-                    @csrf @method('PATCH')
-                    <button class="btn btn-warning btn-sm">
-                        <i class="fa-solid fa-magnifying-glass"></i> Verify
-                    </button>
-                </form>
-            @endif
-
             @if($enrollment->status === 'reviewing')
                 <form method="POST" action="{{ route('officer.enrollments.approve', $enrollment->id) }}">
                     @csrf @method('PATCH')
@@ -85,6 +76,58 @@
 
         {{-- Left column --}}
         <div>
+            @if($enrollment->status === 'pending')
+            <div class="card mb-6">
+                <div class="card-header">
+                    <span class="card-title"><i class="fa-solid fa-clipboard-check"></i> Verification Checklist</span>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('officer.enrollments.verify', $enrollment->id) }}">
+                        @csrf @method('PATCH')
+                        <div class="doc-list" style="margin-bottom:1rem;">
+                            @foreach(\App\Models\Enrollment::VERIFICATION_CHECKS as $key => $label)
+                            <label class="doc-item" style="cursor:pointer;">
+                                <span class="doc-item-label">{{ $label }}</span>
+                                <input type="checkbox"
+                                       name="verification_checks[{{ $key }}]"
+                                       value="1"
+                                       {{ old("verification_checks.$key") ? 'checked' : '' }}
+                                       required>
+                            </label>
+                            @endforeach
+                        </div>
+                        @if($errors->any())
+                            <div class="alert alert-error mb-6">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                <div>Complete all verification checklist items before verifying this enrollment.</div>
+                            </div>
+                        @endif
+                        <button class="btn btn-warning">
+                            <i class="fa-solid fa-magnifying-glass"></i> Verify Enrollment
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @elseif($enrollment->verification_checks)
+            <div class="card mb-6">
+                <div class="card-header">
+                    <span class="card-title"><i class="fa-solid fa-clipboard-check"></i> Verification Checklist</span>
+                </div>
+                <div class="card-body">
+                    <div class="doc-list">
+                        @foreach(\App\Models\Enrollment::VERIFICATION_CHECKS as $key => $label)
+                        <div class="doc-item">
+                            <span class="doc-item-label">{{ $label }}</span>
+                            <span class="badge {{ $enrollment->normalizedVerificationChecks()[$key] ? 'badge-approved' : 'badge-pending' }}">
+                                {{ $enrollment->normalizedVerificationChecks()[$key] ? 'Checked' : 'Pending' }}
+                            </span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <div class="card mb-6">
                 <div class="card-header">
                     <span class="card-title"><i class="fa-solid fa-user"></i> Personal Information</span>

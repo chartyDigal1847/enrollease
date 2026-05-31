@@ -73,7 +73,7 @@ class EnrollmentController extends Controller
     }
 
     /** PATCH /officer/enrollments/{id}/verify — pending → reviewing */
-    public function verify($id)
+    public function verify(Request $request, $id)
     {
         $enrollment = Enrollment::findOrFail($id);
 
@@ -81,7 +81,27 @@ class EnrollmentController extends Controller
             return back()->with('error', 'Only pending enrollments can be verified.');
         }
 
-        $enrollment->transitionTo(Enrollment::STATUS_REVIEWING);
+        $rules = collect(Enrollment::VERIFICATION_CHECKS)
+            ->mapWithKeys(fn ($label, $key) => ["verification_checks.{$key}" => 'accepted'])
+            ->all();
+
+        $request->validate($rules, [
+            'verification_checks.*.accepted' => 'Complete all verification checklist items before verifying this enrollment.',
+        ]);
+
+        $enrollment->update([
+            'verification_checks' => collect(Enrollment::VERIFICATION_CHECKS)
+                ->mapWithKeys(fn ($label, $key) => [$key => true])
+                ->all(),
+            'verified_at' => now(),
+            'verified_by' => (string) session('sso_id', session('sso_name', 'Admission Officer')),
+        ]);
+
+        try {
+            $enrollment->transitionTo(Enrollment::STATUS_REVIEWING);
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         ActivityLog::log('enrollment.verified', $enrollment);
 
@@ -146,6 +166,10 @@ class EnrollmentController extends Controller
         ]);
 
         $newStatus = $request->status;
+
+        if ($enrollment->status === Enrollment::STATUS_PENDING && $newStatus === Enrollment::STATUS_REVIEWING) {
+            return back()->with('error', 'Use the verification checklist before moving this enrollment under review.');
+        }
 
         try {
             $enrollment->transitionTo($newStatus, $request->remarks);

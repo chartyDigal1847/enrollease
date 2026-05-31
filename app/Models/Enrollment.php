@@ -33,6 +33,14 @@ class Enrollment extends Model
         self::STATUS_ENROLLED,
     ];
 
+    const VERIFICATION_CHECKS = [
+        'report_card_viewed' => 'Report card viewed',
+        'psa_viewed' => 'PSA birth certificate viewed',
+        'photo_viewed' => '2x2 photo viewed',
+        'student_info_checked' => 'Student information checked',
+        'guardian_info_checked' => 'Guardian information checked',
+    ];
+
     /**
      * Human-readable status label for UI.
      */
@@ -78,10 +86,15 @@ class Enrollment extends Model
         'room_id',
         'status',
         'remarks',
+        'verification_checks',
+        'verified_at',
+        'verified_by',
     ];
 
     protected $casts = [
         'date_of_birth' => 'date',
+        'verification_checks' => 'array',
+        'verified_at' => 'datetime',
     ];
 
     // ── Relationships ───────────────────────────────────────────────────────
@@ -153,7 +166,40 @@ class Enrollment extends Model
 
         $allowed = self::allowedTransitions()[$this->status] ?? [];
 
-        return in_array($newStatus, $allowed, true);
+        if (! in_array($newStatus, $allowed, true)) {
+            return false;
+        }
+
+        if ($this->status === self::STATUS_PENDING && $newStatus === self::STATUS_REVIEWING) {
+            return $this->hasCompletedVerificationChecklist();
+        }
+
+        return true;
+    }
+
+    public function hasCompletedVerificationChecklist(): bool
+    {
+        $checks = $this->verification_checks ?? [];
+
+        foreach (array_keys(self::VERIFICATION_CHECKS) as $key) {
+            if (($checks[$key] ?? false) !== true) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return array<string, bool>
+     */
+    public function normalizedVerificationChecks(): array
+    {
+        $checks = $this->verification_checks ?? [];
+
+        return collect(self::VERIFICATION_CHECKS)
+            ->mapWithKeys(fn ($label, $key) => [$key => ($checks[$key] ?? false) === true])
+            ->all();
     }
 
     /**
@@ -161,7 +207,10 @@ class Enrollment extends Model
      */
     public function nextStatuses(): array
     {
-        return self::allowedTransitions()[$this->status] ?? [];
+        return array_values(array_filter(
+            self::allowedTransitions()[$this->status] ?? [],
+            fn (string $status) => $this->canTransitionTo($status),
+        ));
     }
 
     /**
@@ -173,6 +222,10 @@ class Enrollment extends Model
     public function transitionTo(string $newStatus, ?string $remarks = null): void
     {
         if (! $this->canTransitionTo($newStatus)) {
+            if ($this->status === self::STATUS_PENDING && $newStatus === self::STATUS_REVIEWING) {
+                throw new \InvalidArgumentException('Complete the verification checklist before moving this enrollment under review.');
+            }
+
             throw new \InvalidArgumentException(
                 "Cannot transition enrollment from '{$this->status}' to '{$newStatus}'."
             );
