@@ -29,7 +29,7 @@
     </div>
     @endif
 
-    <form action="{{ route('student.enrollment.store') }}" method="POST" id="enrollForm" novalidate>
+    <form action="{{ route('student.enrollment.store') }}" method="POST" id="enrollForm" enctype="multipart/form-data" novalidate>
         @csrf
 
         {{-- Step 1: Student info (pre-filled from SSO) --}}
@@ -222,6 +222,37 @@
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Step 4: Enrollment documents --}}
+        <div class="card mb-6">
+            <div class="card-header">
+                <span class="card-title">
+                    <span class="step-badge">4</span>
+                    Enrollment Document
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="info-notice">
+                    <i class="fa-solid fa-file-circle-check"></i>
+                    <div>
+                        <strong>Only upload the document needed for enrollment.</strong>
+                        <p>Your admission documents from EntryEase are kept there to avoid duplicate uploads.</p>
+                    </div>
+                </div>
+                <div class="form-group {{ $errors->has('report_card') ? 'has-error' : '' }}">
+                    <label>Latest Report Card <span class="req">*</span></label>
+                    <input type="file"
+                           name="report_card"
+                           class="form-control"
+                           accept="application/pdf,image/jpeg,image/png,image/jpg"
+                           required>
+                    <small class="form-help">Accepted formats: PDF, JPG, or PNG. Maximum size: 5 MB.</small>
+                    @error('report_card')
+                        <span class="form-error">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
         </div>

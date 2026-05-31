@@ -78,18 +78,23 @@ class EnrollmentController extends Controller
         }
 
         $data = $request->validate([
-            'grade_level'           => 'required|integer|between:1,12',
+            'grade_level'           => 'required|integer|between:7,12',
             'gender'                => 'required|in:male,female',
             'date_of_birth'         => 'required|date|before:today',
             'contact_number'        => 'required|string|max:20',
             'address'               => 'required|string|max:300',
             'lrn'                   => 'nullable|string|size:12',
             'previous_school'       => 'nullable|string|max:150',
-            'last_grade_completed'  => 'nullable|integer|between:1,12',
+            'last_grade_completed'  => 'nullable|integer|between:6,12',
             'guardian_name'         => 'required|string|max:150',
             'guardian_relationship' => 'required|string|max:50',
             'guardian_contact'      => 'required|string|max:20',
             'guardian_occupation'   => 'nullable|string|max:100',
+            'report_card'           => 'required|mimes:pdf,jpeg,png,jpg|max:5120',
+        ], [
+            'report_card.required' => 'Please upload your latest report card.',
+            'report_card.mimes'    => 'The report card must be a PDF, JPG, or PNG file.',
+            'report_card.max'      => 'The report card must not exceed 5 MB.',
         ]);
 
         $nameParts  = explode(' ', trim($student->name));
@@ -99,6 +104,14 @@ class EnrollmentController extends Controller
 
         try {
             $studentRecord = PortalStudentLinker::resolveOrCreateFromSession();
+            $reportCardFile = $request->file('report_card');
+            $documentOwner = $studentRecord?->id ?: sha1($student->email);
+            $reportCardName = 'report_card_' . $documentOwner . '_' . time() . '.' . $reportCardFile->getClientOriginalExtension();
+            $reportCardPath = $reportCardFile->storeAs(
+                'enrollments/report-cards/' . $documentOwner,
+                $reportCardName,
+                'public'
+            );
 
             $enrollment = Enrollment::create([
                 'student_id'            => $studentRecord?->id,
@@ -120,6 +133,7 @@ class EnrollmentController extends Controller
                 'guardian_relationship' => $data['guardian_relationship'],
                 'guardian_contact'      => $data['guardian_contact'],
                 'guardian_occupation'   => $data['guardian_occupation'] ?? null,
+                'report_card_path'      => $reportCardPath,
                 'status'                => Enrollment::STATUS_PENDING,
             ]);
 
